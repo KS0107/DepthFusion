@@ -12,7 +12,8 @@ public:
 
     void update(double price, double quantity);
     std::vector<OrderEntry> get_top_n(int n) const;
-    const std::map<double, double>& levels() const;
+    const std::map<double, double>& ask_levels() const;
+    const std::map<double, double, std::greater<>>& bid_levels() const;
 
 private:
     Side side;
