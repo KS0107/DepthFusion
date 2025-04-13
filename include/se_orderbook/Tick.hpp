@@ -12,6 +12,15 @@ struct Tick {
     Side side;
     double price;
     double quantity;
+
+    Tick(const std::string& exchange,
+         const std::string& symbol,
+         Side side,
+         double price,
+         double quantity,
+         std::chrono::system_clock::time_point ts = std::chrono::system_clock::now())
+        : timestamp(ts), exchange(exchange), symbol(symbol),
+          side(side), price(price), quantity(quantity) {}
 };
 
 #endif
