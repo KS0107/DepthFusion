@@ -8,8 +8,10 @@
 #include "Side.hpp"
 #include "OrderEntry.hpp"
 #include "IOrderBook.hpp"
+#include <ostream>
 
 class AggregatedOrderBook {
+friend std::ostream& operator<<(std::ostream& os, const AggregatedOrderBook& aob);
 public:
     void register_orderbook(const std::string& exchange, std::unique_ptr<IOrderBook> book);
     void apply_update(const NormalizedOrderUpdate& update);

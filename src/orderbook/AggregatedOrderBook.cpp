@@ -1,5 +1,6 @@
 #include "AggregatedOrderBook.hpp"
 #include "NormalizedOrderUpdate.hpp"
+#include "OrderBook.hpp"
 
 void AggregatedOrderBook::register_orderbook(const std::string& exchange, std::unique_ptr<IOrderBook> book) {
     books_[exchange] = std::move(book);
@@ -43,5 +44,16 @@ std::unordered_map<std::string, std::vector<OrderEntry>> AggregatedOrderBook::ge
         result[exchange] = book->get_top_n(side, n);
     }
     return result;
+}
+
+std::ostream& operator<<(std::ostream& os, const AggregatedOrderBook& aob) {
+    for (const auto& [exchange, book] : aob.books_) { 
+        if (const auto* concrete = dynamic_cast<const OrderBook*>(book.get())) {
+            os << *concrete << "\n";
+        } else {
+            os << "[Unknown IOrderBook impl for " << exchange << "]\n";
+        }
+    }
+    return os;
 }
 

@@ -1,5 +1,6 @@
 #include "NormalizedOrderUpdate.hpp"
 #include "OrderBook.hpp"
+#include <iomanip>
 
 OrderBook::OrderBook(std::string exchange_name, std::string symbol) :
 exchange_name_(std::move(exchange_name)), 
@@ -21,4 +22,23 @@ std::vector<OrderEntry> OrderBook::get_top_n(Side side, int n) const {
 
 std::string OrderBook::get_exchange_name() const {
     return exchange_name_;
+};
+
+std::ostream& operator<<(std::ostream& os, const OrderBook& ob) {
+    os << "OrderBook [" << ob.exchange_name_ << "] " << ob.symbol_ << "\n";
+
+    auto bids = ob.get_top_n(Side::Bid, 5);
+    auto asks = ob.get_top_n(Side::Ask, 5);
+
+    os << std::fixed << std::setprecision(2);
+
+    os << "--- Bids ---\n";
+    for (const auto& entry : bids)
+        os << entry.price << " @ " << entry.quantity << "\n";
+
+    os << "--- Asks ---\n";
+    for (const auto& entry : asks)
+        os << entry.price << " @ " << entry.quantity << "\n";
+
+    return os;
 };

@@ -2,11 +2,13 @@
 #define SE_ORDERBOOK_ORDERBOOK_HPP
 
 #include <string>
+#include <ostream>
 #include "IOrderBook.hpp"
 #include "OrderBookSide.hpp"
 #include "NormalizedOrderUpdate.hpp"
 
 class OrderBook : public IOrderBook {
+friend std::ostream& operator<<(std::ostream& os, const OrderBook& ob);
 public:
     OrderBook(std::string exchange_name, std::string symbol);
 
