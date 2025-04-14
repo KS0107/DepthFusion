@@ -4,10 +4,9 @@ project(DepthFusion)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Include path for headers
 include_directories(include)
 include_directories(include/se_orderbook) 
-# Source files
+
 file(GLOB_RECURSE SOURCES
     "src/orderbook/*.cpp"
     "src/utils/*.cpp"
@@ -15,3 +14,8 @@ file(GLOB_RECURSE SOURCES
 )
 
 add_executable(depthfusion ${SOURCES})
+
+enable_testing()
+
+add_subdirectory(external/googletest)
+add_subdirectory(tests)
