@@ -20,7 +20,7 @@ void OrderBookSide::update(double price, double quantity) {
 
 std::vector<OrderEntry> OrderBookSide::get_top_n(int n) const {
     std::vector<OrderEntry> result;
-    
+    if (n <= 0) return result;
     if (side == Side::Bid) {
         for (const auto& [price, quantity] : bids_) {
             if (result.size() >= static_cast<size_t>(n)) break;

@@ -83,3 +83,38 @@ TEST(OrderBookTest, SnapshotUpdateJustBehavesLikeReplace) {
     ASSERT_EQ(bids[0].quantity, 3.0);
 }
 
+TEST(OrderBookTest, TopNEdgeCases) {
+    OrderBook book("Binance", "BTCUSDT");
+    book.apply_update({"Binance", "BTCUSDT", Side::Bid, 27000.0, 1.0, false});
+    book.apply_update({"Binance", "BTCUSDT", Side::Bid, 26900.0, 1.0, false});
+
+    EXPECT_TRUE(book.get_top_n(Side::Bid, 0).empty());
+    EXPECT_TRUE(book.get_top_n(Side::Bid, -1).empty());
+    EXPECT_EQ(book.get_top_n(Side::Bid, 10).size(), 2);
+}
+
+TEST(OrderBookTest, MultipleUpdatesSamePriceLevel) {
+    OrderBook book("Binance", "BTCUSDT");
+
+    book.apply_update({"Binance", "BTCUSDT", Side::Ask, 27500.0, 1.0, false});
+    book.apply_update({"Binance", "BTCUSDT", Side::Ask, 27500.0, 2.5, false});
+
+    auto asks = book.get_top_n(Side::Ask, 1);
+    ASSERT_EQ(asks.size(), 1);
+    EXPECT_EQ(asks[0].price, 27500.0);
+    EXPECT_EQ(asks[0].quantity, 2.5);
+}
+
+TEST(OrderBookTest, SnapshotThenIncrementalUpdates) {
+    OrderBook book("Binance", "BTCUSDT");
+
+    // snapshot sets initial quantity
+    book.apply_update({"Binance", "BTCUSDT", Side::Bid, 27100.0, 3.0, true});
+    // incremental update at same price should overwrite
+    book.apply_update({"Binance", "BTCUSDT", Side::Bid, 27100.0, 1.0, false});
+
+    auto bids = book.get_top_n(Side::Bid, 1);
+    ASSERT_EQ(bids.size(), 1);
+    EXPECT_EQ(bids[0].price, 27100.0);
+    EXPECT_EQ(bids[0].quantity, 1.0);
+}
