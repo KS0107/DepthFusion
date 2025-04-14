@@ -3,7 +3,7 @@
 
 #include <string>
 #include "Side.hpp"
-struct OrderBookUpdate {
+struct NormalizedOrderUpdate {
     std::string exchange_name;
     std::string symbol;
     Side side;
