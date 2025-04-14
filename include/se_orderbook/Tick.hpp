@@ -3,7 +3,7 @@
 
 #include <chrono>
 #include <string>
-#include <Side.hpp>
+#include "Side.hpp"
 
 struct Tick {
     std::chrono::system_clock::time_point timestamp;

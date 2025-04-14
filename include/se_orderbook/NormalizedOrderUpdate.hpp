@@ -2,7 +2,7 @@
 #define SE_ORDERBOOK_NORMALIZEDORDERUPDATE_HPP
 
 #include <string>
-#include <Side.hpp>
+#include "Side.hpp"
 struct OrderBookUpdate {
     std::string exchange_name;
     std::string symbol;

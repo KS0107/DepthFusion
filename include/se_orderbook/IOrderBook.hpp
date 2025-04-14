@@ -3,8 +3,8 @@
 
 #include <vector>
 #include <string>
-#include <Side.hpp>
-#include <OrderEntry.hpp>
+#include "Side.hpp"
+#include "OrderEntry.hpp"
 
 struct NormalizedOrderUpdate;
 
