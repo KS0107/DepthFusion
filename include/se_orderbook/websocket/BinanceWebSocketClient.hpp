@@ -18,6 +18,7 @@ public:
     void connect() override;
     void subscribe(const std::string& channel) override;
     void run() override;
+    void disconnect() override;
     bool is_connected() const override;
 
 private:

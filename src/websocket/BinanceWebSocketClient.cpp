@@ -107,3 +107,16 @@ void BinanceWebSocketClient::run() {
 bool BinanceWebSocketClient::is_connected() const {
     return connected_;
 }
+
+void BinanceWebSocketClient::disconnect() {
+    if (!connected_) return;
+    websocketpp::lib::error_code ec;
+    client_.close(hdl_, websocketpp::close::status::going_away, "Client shutdown", ec);
+    if (ec) {
+        std::cerr << "[WebSocket] Error during disconnect: " << ec.message() << "\n";
+    } else {
+        std::cout << "[WebSocket] Sent close frame.\n";
+    }
+
+    client_.stop();
+}
