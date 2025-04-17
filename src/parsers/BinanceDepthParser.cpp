@@ -27,7 +27,14 @@ std::vector<NormalizedOrderUpdate> BinanceDepthParser::parse(const std::string& 
             if (bid.size() < 2) continue;
             double price = std::stod(bid[0].get<std::string>());
             double qty   = std::stod(bid[1].get<std::string>());
-            updates.push_back({"Binance", symbol, Side::Bid, price, qty, false});
+            updates.push_back({
+                "Binance_" + symbol,
+                symbol,
+                Side::Bid, 
+                price, 
+                qty, 
+                false
+            });
         }
     }
 
@@ -36,7 +43,14 @@ std::vector<NormalizedOrderUpdate> BinanceDepthParser::parse(const std::string& 
             if (ask.size() < 2) continue;
             double price = std::stod(ask[0].get<std::string>());
             double qty   = std::stod(ask[1].get<std::string>());
-            updates.push_back({"Binance", symbol, Side::Ask, price, qty, false});
+            updates.push_back({
+                "Binance_" + symbol,
+                symbol,
+                Side::Ask, 
+                price, 
+                qty, 
+                false
+            });
         }
     }
 

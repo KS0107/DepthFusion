@@ -2,6 +2,7 @@
 #include "se_orderbook/websocket/BinanceWebSocketClient.hpp"
 #include "se_orderbook/parsers/BinanceDepthParser.hpp"
 #include "OrderBook.hpp"
+#include "se_orderbook/core/OrderBookManager.hpp"
 #include <iostream>
 #include <memory>
 #include <csignal>
@@ -14,40 +15,20 @@ void signal_handler(int) {
 
 int main() {
     std::signal(SIGINT, signal_handler);
-    AggregatedOrderBook agg;
-    agg.register_orderbook("Binance", std::make_unique<OrderBook>("Binance", "BTCUSDT"));
-    static int counter = 0;
-    BinanceWebSocketClient client(
-        "wss://stream.binance.com:9443/ws/btcusdt@depth@100ms",
-        [&](const std::string& msg) {
-            auto updates = BinanceDepthParser::parse(msg);
-            for (const auto& u : updates) {
-                agg.apply_update(u);
-            }
-            if ((++counter % 10) == 0) {
-                if (!updates.empty()) {
-                    std::cout << agg;
-                }
-            }
-            
-        }
-    );
+    OrderBookManager manager;
 
-    client.subscribe("btcusdt@depth@100ms");
-    client.connect();
+    manager.add_pair("btcusdt");
+    manager.add_pair("ethusdt");
+    manager.add_pair("solusdt");
 
-    std::thread ws_thread([&]() {
-        client.run();
-    });
+    manager.start();
 
     while (!stop_signal) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 
     std::cout << "\n[Main] Shutting down...\n";
-    client.disconnect();
-    ws_thread.join();
-    std::cout << "[Main] Clean exit.\n";
+    manager.stop();
 
     return 0;
 }
