@@ -26,7 +26,6 @@ int main() {
             }
             if ((++counter % 10) == 0) {
                 if (!updates.empty()) {
-                    std::cout << "C\n";
                     std::cout << agg;
                 }
             }

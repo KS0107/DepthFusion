@@ -27,10 +27,10 @@ std::string OrderBook::get_exchange_name() const {
 std::ostream& operator<<(std::ostream& os, const OrderBook& ob) {
     os << "OrderBook [" << ob.exchange_name_ << "] " << ob.symbol_ << "\n";
 
-    auto bids = ob.get_top_n(Side::Bid, 5);
-    auto asks = ob.get_top_n(Side::Ask, 5);
+    auto bids = ob.get_top_n(Side::Bid, 10);
+    auto asks = ob.get_top_n(Side::Ask, 10);
 
-    os << std::fixed << std::setprecision(2);
+    os << std::fixed;
 
     os << "--- Bids ---\n";
     for (const auto& entry : bids)
