@@ -22,6 +22,7 @@ file(GLOB_RECURSE SOURCES
     "src/utils/*.cpp"
     "src/websocket/*.cpp"
     "src/main.cpp"
+    "src/parsers/*.cpp" 
 )
 
 # Build main binary

@@ -24,10 +24,12 @@ public:
 private:
     std::string uri_;
     std::atomic<bool> connected_;
+    std::atomic<bool> manual_close_;
     std::string pending_channel_;
     WebSocketClient client_;
     websocketpp::connection_hdl hdl_;
     MessageHandler message_callback_;
+    void reconnect();
 };
 
 #endif
