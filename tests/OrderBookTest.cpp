@@ -108,9 +108,8 @@ TEST(OrderBookTest, MultipleUpdatesSamePriceLevel) {
 TEST(OrderBookTest, SnapshotThenIncrementalUpdates) {
     OrderBook book("Binance", "BTCUSDT");
 
-    // snapshot sets initial quantity
     book.apply_update({"Binance", "BTCUSDT", Side::Bid, 27100.0, 3.0, true});
-    // incremental update at same price should overwrite
+    
     book.apply_update({"Binance", "BTCUSDT", Side::Bid, 27100.0, 1.0, false});
 
     auto bids = book.get_top_n(Side::Bid, 1);
