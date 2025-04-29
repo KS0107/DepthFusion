@@ -9,6 +9,7 @@ set(CORE_SOURCES
     ${PROJECT_SOURCE_DIR}/src/core/OrderBookManager.cpp
     ${PROJECT_SOURCE_DIR}/src/parsers/BinanceDepthParser.cpp
     ${PROJECT_SOURCE_DIR}/src/websocket/BinanceWebSocketClient.cpp
+    ${PROJECT_SOURCE_DIR}/src/feedhandlers/BinanceFeedHandler.cpp 
 )
 
 add_executable(runTests ${TEST_SOURCES} ${CORE_SOURCES})

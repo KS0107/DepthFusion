@@ -8,7 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(include)
 include_directories(include/se_orderbook)
 include_directories(include/se_orderbook/websocket)
-
+include_directories(include/se_orderbook/feedhandlers)
+include_directories(include/se_orderbook/core)
 # Homebrew includes for WebSocket++ and OpenSSL
 include_directories(/opt/homebrew/include)
 link_directories(/opt/homebrew/lib)
@@ -24,6 +25,7 @@ file(GLOB_RECURSE SOURCES
     "src/main.cpp"
     "src/parsers/*.cpp" 
     "src/core/*.cpp"
+    "src/feedhandlers/*.cpp"
 )
 
 # Build main binary

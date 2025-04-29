@@ -1,21 +1,21 @@
 #include <gtest/gtest.h>
 #include "se_orderbook/core/OrderBookManager.hpp"
-#include <string>
-#include <chrono>
-#include <thread>
+#include "se_orderbook/feedhandlers/BinanceFeedHandler.hpp"
+#include "OrderBook.hpp"
 
 TEST(OrderBookManagerTest, RegistersCorrectBooksForPairs) {
-    OrderBookManager manager;
-    manager.add_pair("ethusdt");
-    manager.add_pair("btcusdt");
+    AggregatedOrderBook agg;
+    BinanceFeedHandler handler(
+        std::vector<std::string>{"ethusdt", "btcusdt"}, 
+        agg
+    );
 
-    testing::internal::CaptureStdout();
-    manager.start();
+    // Check that books were registered
+    auto all_bids = agg.get_all_top_n(Side::Bid, 1);
+    EXPECT_TRUE(all_bids.find("Binance_ETHUSDT") != all_bids.end());
+    EXPECT_TRUE(all_bids.find("Binance_BTCUSDT") != all_bids.end());
 
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-    manager.stop();
-    std::string output = testing::internal::GetCapturedStdout();
-
-    EXPECT_NE(output.find("OrderBook [Binance] ETHUSDT"), std::string::npos);
-    EXPECT_NE(output.find("OrderBook [Binance] BTCUSDT"), std::string::npos);
+    auto all_asks = agg.get_all_top_n(Side::Ask, 1);
+    EXPECT_TRUE(all_asks.find("Binance_ETHUSDT") != all_asks.end());
+    EXPECT_TRUE(all_asks.find("Binance_BTCUSDT") != all_asks.end());
 }

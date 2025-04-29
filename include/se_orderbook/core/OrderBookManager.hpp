@@ -2,29 +2,25 @@
 #define SE_ORDERBOOK_MANAGER_HPP
 
 #include "AggregatedOrderBook.hpp"
-#include "BinanceWebSocketClient.hpp"
-#include <unordered_map>
+#include "IFeedHandler.hpp"
+#include <memory>
 #include <vector>
 #include <string>
-#include <memory>
-#include <thread>
 
 class OrderBookManager {
 public:
     OrderBookManager();
     ~OrderBookManager();
 
-    void add_pair(const std::string& symbol);
+    void add_feed_handler(std::unique_ptr<IFeedHandler> handler);
+    AggregatedOrderBook& get_aggregated_order_book();
     void start();
     void stop();
     void print_all() const;
 
-private: 
+private:
     AggregatedOrderBook agg_;
-    std::vector<std::string> pairs_;
-    std::unique_ptr<BinanceWebSocketClient> client_;
-    std::thread ws_thread_;
-    std::atomic<bool> running_;
+    std::vector<std::unique_ptr<IFeedHandler>> handlers_;
 };
 
 #endif
