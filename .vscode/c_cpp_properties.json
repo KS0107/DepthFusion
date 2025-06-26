@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/se_orderbook",
+                "${workspaceFolder}/include/se_orderbook/websocket",
+                "${workspaceFolder}/build/_deps/googletest-src/googletest/include",
+                "/opt/homebrew/include",
+                "/opt/homebrew/opt/openssl@3/include",
+                "${workspaceFolder}/external/nlohmann/json.hpp",
+                "${workspaceFolder}/include/se_orderbook/core",
+                "${workspaceFolder}/include/se_orderbook/parsers"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "macos-clang-arm64"
+        }
+    ],
+    "version": 4
+}

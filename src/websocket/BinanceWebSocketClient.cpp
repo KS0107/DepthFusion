@@ -33,25 +33,25 @@ BinanceWebSocketClient::BinanceWebSocketClient(const std::string& uri, MessageHa
         client_.set_open_handler([this](websocketpp::connection_hdl hdl) {
             connected_ = true;
             hdl_  = hdl;
-            std::cout << "[WebSocket] Connected to Binance\n";
+            std::cout << "[Binance WS] Connected to Binance\n";
         });
 
         client_.set_fail_handler([this](websocketpp::connection_hdl hdl) {
             connected_ = false;
             auto con = client_.get_con_from_hdl(hdl);
-            std::cerr << "[WebSocket] Connection failed : " << con->get_ec().message() << "\n";
+            std::cerr << "[Binance WS] Connection failed : " << con->get_ec().message() << "\n";
             reconnect();
         });
 
         client_.set_close_handler([this](websocketpp::connection_hdl) {
             connected_ = false;
-            std::cerr << "[WebSocket] Connected closed\n";
+            std::cerr << "[Binance WS] Connected closed\n";
 
             if (!manual_close_) {
-                std::cerr << "[WebSocket] Unexpected close - attempting to reconnect...\n";
+                std::cerr << "[Binance WS] Unexpected close - attempting to reconnect...\n";
                 reconnect();
             } else {
-                std::cout << "[WebSocket] Manual close. No reconnect.\n";
+                std::cout << "[Binance WS] Manual close. No reconnect.\n";
             }
         });
 
@@ -64,23 +64,23 @@ BinanceWebSocketClient::BinanceWebSocketClient(const std::string& uri, MessageHa
         client_.set_ping_handler([this](websocketpp::connection_hdl hdl, std::string payload) {
             websocketpp::lib::error_code ec;
             client_.pong(hdl, payload);
-            std::cout << "[WebSocket] Ping received, sent pong with payload: " << payload << "\n";
+            std::cout << "[Binance WS] Ping received, sent pong with payload: " << payload << "\n";
             return true;
         });
 
         client_.set_pong_handler([](websocketpp::connection_hdl, std::string) {
-            std::cout << "[WebSocket] Pong received\n";
+            std::cout << "[Binance WS] Pong received\n";
             return true;
         });
 
         client_.set_pong_timeout_handler([](websocketpp::connection_hdl, std::string) {
-            std::cerr << "[WebSocket] Pong timeout\n";
+            std::cerr << "[Binance WS] Pong timeout\n";
         });
 
         client_.set_open_handler([this] (websocketpp::connection_hdl hdl) {
             connected_ = true;
             hdl_ = hdl;
-            std::cout << "[WebSocket] Connected to Binance\n";
+            std::cout << "[Binance WS] Connected to Binance\n";
 
             if (!pending_channel_.empty()) {
                 std::stringstream ss;
@@ -89,9 +89,9 @@ BinanceWebSocketClient::BinanceWebSocketClient(const std::string& uri, MessageHa
 
                 client_.send(hdl_, ss.str(), websocketpp::frame::opcode::text, ec);
                 if (ec) {
-                    std::cerr << "[WebSocket] Subscription failed: " << ec.message() << "\n";
+                    std::cerr << "[Binance WS] Subscription failed: " << ec.message() << "\n";
                 } else {
-                    std::cout << "[WebSocket] Subscribed to: " << pending_channel_ << "\n";
+                    std::cout << "[Binance WS] Subscribed to: " << pending_channel_ << "\n";
                 }
             }
         });
@@ -102,7 +102,7 @@ void BinanceWebSocketClient::connect() {
     websocketpp::lib::error_code ec;
     auto con = client_.get_connection(uri_, ec);
     if (ec) {
-        std::cerr << "[WebSocket] Connection creation failed: " << ec.message() << std::endl;
+        std::cerr << "[Binance WS] Connection creation failed: " << ec.message() << std::endl;
         return;
     }
     client_.connect(con);
@@ -121,15 +121,16 @@ bool BinanceWebSocketClient::is_connected() const {
 }
 
 void BinanceWebSocketClient::reconnect() {
-    std::cout << "[WebSocket] Reconnecting in 5 seconds...\n";
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    int reconnect_timer = 1;
+    std::cout << "[Binance WS] Reconnecting in " << reconnect_timer << " second...\n";
+    std::this_thread::sleep_for(std::chrono::seconds(reconnect_timer));
     connect();
 
     std::thread([this]() {
         try {
             run();
         } catch (const std::exception& e) {
-            std::cerr << "[WebSocket] Reconnect failed: " << e.what() << "\n";
+            std::cerr << "[Binance WS] Reconnect failed: " << e.what() << "\n";
         }
     }).detach();
 }
@@ -140,9 +141,9 @@ void BinanceWebSocketClient::disconnect() {
     websocketpp::lib::error_code ec;
     client_.close(hdl_, websocketpp::close::status::going_away, "Client shutdown", ec);
     if (ec) {
-        std::cerr << "[WebSocket] Error during disconnect: " << ec.message() << "\n";
+        std::cerr << "[Binance WS] Error during disconnect: " << ec.message() << "\n";
     } else {
-        std::cout << "[WebSocket] Sent close frame.\n";
+        std::cout << "[Binance WS] Sent close frame.\n";
     }
 
     client_.stop();
