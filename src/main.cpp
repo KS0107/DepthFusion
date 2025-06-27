@@ -27,7 +27,7 @@ int main() {
 
     // Attach Kraken Feed Handler
     manager.add_feed_handler(std::make_unique<KrakenFeedHandler>(
-        std::vector<std::string>{"BTC/USD"},  
+        std::vector<std::string>{"BTC/USDT"},  
         manager.get_aggregated_order_book()
     ));
 

@@ -1,6 +1,8 @@
 #include "se_orderbook/websocket/KrakenWebSocketClient.hpp"
 #include <websocketpp/config/asio_client.hpp>
 #include <websocketpp/client.hpp>
+#include <nlohmann/json.hpp>
+
 #include <iostream>
 #include <thread>
 #include <sstream>
@@ -24,7 +26,7 @@ static std::shared_ptr<boost::asio::ssl::context> kraken_tls_init() {
 }
 
 KrakenWebSocketClient::KrakenWebSocketClient(const std::string& uri, MessageHandler on_message)
-    : uri_(uri), connected_(false), manual_close_(false), message_callback_(std::move(on_message))
+    : uri_(uri), connected_(false), manual_close_(false), message_callback_(std::move(on_message)), next_request_id_{1}
 {
     client_.init_asio();
 
@@ -40,15 +42,16 @@ KrakenWebSocketClient::KrakenWebSocketClient(const std::string& uri, MessageHand
             open_handler_();
         }
 
-        if (!pending_channel_.empty()) {
+        for (const auto& msg : pending_subscriptions_) {
             websocketpp::lib::error_code ec;
-            client_.send(hdl_, pending_channel_, websocketpp::frame::opcode::text, ec);
+            client_.send(hdl_, msg, websocketpp::frame::opcode::text, ec);
             if (ec) {
-                std::cerr << "[Kraken WS] Subscription error: " << ec.message() << std::endl;
+                std::cerr << "[Kraken WS] Error sending pending subscription: " << ec.message() << std::endl;
             } else {
-                std::cout << "[Kraken WS] Subscribed: " << pending_channel_ << std::endl;
+                std::cout << "[Kraken WS] Sent pending subscription: " << msg << std::endl;
             }
         }
+        pending_subscriptions_.clear();
     });
 
     client_.set_message_handler([this](websocketpp::connection_hdl, WebSocketClient::message_ptr msg) {
@@ -102,19 +105,55 @@ void KrakenWebSocketClient::disconnect() {
     client_.stop();
 }
 
-void KrakenWebSocketClient::subscribe(const std::string& channel) {
-    pending_channel_ = channel;
+void KrakenWebSocketClient::subscribe(const std::vector<std::string>& channels) {
+    if (channels.empty()) return;
 
+    nlohmann::json subscribe_msg;
+    subscribe_msg["method"] = "subscribe";
+    subscribe_msg["params"] = {
+        {"channel", "book"},
+        {"symbol", channels}
+    };
+    subscribe_msg["req_id"] = next_request_id_++;
+
+    std::string msg = subscribe_msg.dump();
+    
     if (connected_) {
         websocketpp::lib::error_code ec;
-        client_.send(hdl_, channel, websocketpp::frame::opcode::text, ec);
+        client_.send(hdl_, msg, websocketpp::frame::opcode::text, ec);
         if (ec) {
             std::cerr << "[Kraken WS] Subscription error: " << ec.message() << std::endl;
         } else {
-            std::cout << "[Kraken WS] Sent subscription.\n";
+            std::cout << "[Kraken WS] Sent subscription: " << msg << std::endl;
         }
     } else {
+        pending_subscriptions_.push_back(msg);
         std::cout << "[Kraken WS] Subscription deferred until connected.\n";
+    }
+}
+
+void KrakenWebSocketClient::unsubscribe(const std::vector<std::string>& channels) {
+    if (channels.empty() || !connected_) {
+        std::cerr << "[Kraken WS] Cannot unsubscribe — either not connected or empty symbol list.\n";
+        return;
+    }
+
+    nlohmann::json unsubscribe_msg;
+    unsubscribe_msg["method"] = "unsubscribe";
+    unsubscribe_msg["params"] = {
+        {"channel", "book"},
+        {"symbol", channels}
+    };
+    unsubscribe_msg["req_id"] = next_request_id_++;
+
+    std::string msg = unsubscribe_msg.dump();
+    websocketpp::lib::error_code ec;
+    client_.send(hdl_, msg, websocketpp::frame::opcode::text, ec);
+
+    if (ec) {
+        std::cerr << "[Kraken WS] Unsubscribe error: " << ec.message() << std::endl;
+    } else {
+        std::cout << "[Kraken WS] Sent unsubscribe: " << msg << std::endl;
     }
 }
 

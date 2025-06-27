@@ -2,6 +2,7 @@
 #include <websocketpp/common/thread.hpp>
 #include <websocketpp/config/asio_client.hpp>
 #include <websocketpp/client.hpp>
+#include <nlohmann/json.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -22,7 +23,7 @@ static std::shared_ptr<boost::asio::ssl::context> on_tls_init() {
 }
 
 BinanceWebSocketClient::BinanceWebSocketClient(const std::string& uri, MessageHandler on_message) 
-    : uri_(uri), connected_(false), message_callback_(std::move(on_message)) {
+    : uri_(uri), connected_(false), message_callback_(std::move(on_message)), next_request_id_{1} {
         client_.clear_access_channels(websocketpp::log::alevel::all);
         client_.init_asio();
 
@@ -82,18 +83,16 @@ BinanceWebSocketClient::BinanceWebSocketClient(const std::string& uri, MessageHa
             hdl_ = hdl;
             std::cout << "[Binance WS] Connected to Binance\n";
 
-            if (!pending_channel_.empty()) {
-                std::stringstream ss;
-                ss << R"({"method":"SUBSCRIBE", "params":[")" << pending_channel_ << R"("],"id":1})";
+            for (const auto& msg : pending_subscriptions_) {
                 websocketpp::lib::error_code ec;
-
-                client_.send(hdl_, ss.str(), websocketpp::frame::opcode::text, ec);
+                client_.send(hdl_, msg, websocketpp::frame::opcode::text, ec);
                 if (ec) {
-                    std::cerr << "[Binance WS] Subscription failed: " << ec.message() << "\n";
+                    std::cerr << "[Binance WS] Error sending deferred subscription: " << ec.message() << "\n";
                 } else {
-                    std::cout << "[Binance WS] Subscribed to: " << pending_channel_ << "\n";
+                    std::cout << "[Binance WS] Sent deferred subscription: " << msg << "\n";
                 }
             }
+            pending_subscriptions_.clear();
         });
 }
 
@@ -108,8 +107,57 @@ void BinanceWebSocketClient::connect() {
     client_.connect(con);
 }
 
-void BinanceWebSocketClient::subscribe(const std::string& channel) {
-    pending_channel_ = channel;
+void BinanceWebSocketClient::subscribe(const std::vector<std::string>& channels) {
+    if (channels.empty()) return;
+
+    int req_id = next_request_id_++;
+
+    nlohmann::json sub_msg;
+    sub_msg["method"] = "SUBSCRIBE";
+    sub_msg["params"] = channels;
+    sub_msg["id"] = req_id;
+
+    std::string msg = sub_msg.dump();
+
+    if (connected_) {
+        websocketpp::lib::error_code ec;
+        client_.send(hdl_, msg, websocketpp::frame::opcode::text, ec);
+        if (ec) {
+            std::cerr << "[Binance WS] Subscription failed: " << ec.message() << "\n";
+        } else {
+            std::cout << "[Binance WS] Subscribed (id=" << req_id << "): " << msg << "\n";
+        }
+    } else {
+        pending_subscriptions_.push_back(msg);
+        std::cout << "[Binance WS] Subscription deferred (id=" << req_id << ").\n";
+    }
+}
+
+void BinanceWebSocketClient::unsubscribe(const std::vector<std::string>& channels) {
+    if (!connected_) {
+        std::cerr << "[Binance WS] Cannot unsubscribe: not connected." << std::endl;
+        return;
+    }
+    
+    if (channels.empty()) {
+        std::cerr << "[Binance WS] Not currently subscribed to any channels." << std::endl;
+        return;
+    }
+    int req_id = next_request_id_++;
+    
+    nlohmann::json unsubscribe_msg;
+    unsubscribe_msg["method"] = "UNSUBSCRIBE";
+    unsubscribe_msg["params"] = channels;
+    unsubscribe_msg["id"] = req_id;
+    
+    std::string msg = unsubscribe_msg.dump();
+    websocketpp::lib::error_code ec;
+    client_.send(hdl_, msg, websocketpp::frame::opcode::text, ec);
+    if (ec) {
+        std::cerr << "[Binance WS] Unsubscribe failed: " << ec.message() << "\n";
+    } else {
+        std::cout << "[Binance WS] Sent unsubscribe for " << channels.size() << " stream(s).\n";
+    }
 }
 
 void BinanceWebSocketClient::run() {

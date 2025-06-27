@@ -22,6 +22,15 @@ void KrakenFeedHandler::start() {
             auto updates = KrakenDepthParser::parse(msg);
             for (const auto& u : updates) {
                 agg_.apply_update(u);
+                // std::cout << "[KrakenFeedHandler] Update received: "
+                //       << "exchange=" << u.exchange_name
+                //       << ", symbol=" << u.symbol
+                //       << ", side=" << (u.side == Side::Bid ? "Bid" : "Ask")
+                //       << ", price=" << u.price
+                //       << ", qty=" << u.quantity
+                //       << ", snapshot=" << (u.is_snapshot ? "true" : "false")
+                //       << std::endl;
+
             }
         }
     );
@@ -54,17 +63,9 @@ void KrakenFeedHandler::subscribe_to_pairs() {
         return;
     }
 
-    nlohmann::json subscribe_message;
-    subscribe_message["method"] = "subscribe";
+    client_->subscribe(pairs_);
 
-    nlohmann::json params;
-    params["channel"] = "book";
-    params["symbol"] = pairs_; 
-
-    subscribe_message["params"] = params;
-
-    std::string msg = subscribe_message.dump();
-    client_->subscribe(msg);
-
-    std::cout << "[KrakenFeedHandler] Sent subscription: " << msg << std::endl;
+    std::cout << "[KrakenFeedHandler] Sent subscription request for symbols: ";
+    for (const auto& p : pairs_) std::cout << p << " ";
+    std::cout << std::endl;
 }
