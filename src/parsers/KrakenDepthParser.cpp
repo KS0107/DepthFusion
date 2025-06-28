@@ -1,4 +1,5 @@
 #include "se_orderbook/parsers/KrakenDepthParser.hpp"
+#include "utils/SymbolNormaliser.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 
@@ -25,7 +26,8 @@ std::vector<NormalizedOrderUpdate> KrakenDepthParser::parse(const std::string& j
             if (!entry.contains("symbol")) continue;
             
             std::string symbol = entry["symbol"];
-            
+            std::string normalised_symbol = SymbolNormaliser::kraken(symbol);
+
             auto side_parser = [&](const std::string& side_key, Side side) {
                 if (!entry.contains(side_key)) return;
                 for (const auto& level : entry[side_key]) {
@@ -34,7 +36,12 @@ std::vector<NormalizedOrderUpdate> KrakenDepthParser::parse(const std::string& j
                     double price = level["price"];
                     double qty = level["qty"];
                     NormalizedOrderUpdate update = NormalizedOrderUpdate{
-                        "Kraken_" + symbol, symbol, side, price, qty, (type == "snapshot")
+                        "Kraken_" + normalised_symbol, 
+                        normalised_symbol, 
+                        side, 
+                        price, 
+                        qty, 
+                        (type == "snapshot")
                     };
                     updates.push_back(update);
                     

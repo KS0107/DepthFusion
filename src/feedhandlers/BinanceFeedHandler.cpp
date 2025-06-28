@@ -1,6 +1,7 @@
 // src/websocket/BinanceFeedHandler.cpp
 #include "se_orderbook/feedhandlers/BinanceFeedHandler.hpp"
 #include "se_orderbook/parsers/BinanceDepthParser.hpp"
+#include "utils/SymbolNormaliser.hpp"
 #include "OrderBook.hpp"
 #include <algorithm>
 #include <iostream>
@@ -8,9 +9,8 @@
 BinanceFeedHandler::BinanceFeedHandler(const std::vector<std::string>& pairs, AggregatedOrderBook& agg)
     : agg_(agg), pairs_(pairs), running_(false) {
     for (const auto& pair : pairs_) {
-        std::string upper = pair;
-        std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
-        agg_.register_orderbook("Binance_" + upper, std::make_unique<OrderBook>("Binance", upper));
+        std::string normalised = SymbolNormaliser::binance(pair);
+        agg_.register_orderbook("Binance_" + normalised, std::make_unique<OrderBook>("Binance", normalised));
     }
 }
 

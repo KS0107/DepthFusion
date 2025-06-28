@@ -1,15 +1,16 @@
 #include "se_orderbook/feedhandlers/KrakenFeedHandler.hpp"
 #include "se_orderbook/parsers/KrakenDepthParser.hpp"
+#include "utils/SymbolNormaliser.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <OrderBook.hpp>
 
+
 KrakenFeedHandler::KrakenFeedHandler(const std::vector<std::string>& pairs, AggregatedOrderBook& agg)
     : agg_(agg), pairs_(pairs), running_(false) {
         for (const auto& pair : pairs_) {
-            std::string upper = pair;
-            std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
-            agg_.register_orderbook("Kraken_" + upper, std::make_unique<OrderBook>("Kraken", upper));
+            std::string normalised = SymbolNormaliser::kraken(pair);
+            agg_.register_orderbook("Kraken_" + normalised, std::make_unique<OrderBook>("Kraken", normalised));
         }
     }
 

@@ -1,4 +1,5 @@
 #include "se_orderbook/parsers/BinanceDepthParser.hpp"
+#include "utils/SymbolNormaliser.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 using json  = nlohmann::json;
@@ -21,6 +22,7 @@ std::vector<NormalizedOrderUpdate> BinanceDepthParser::parse(const std::string& 
     }
 
     std::string symbol = parsed["s"];
+    std::string normalised_symbol = SymbolNormaliser::binance(symbol);
 
     if (parsed.contains("b")) {
         for (const auto& bid : parsed["b"]) {
@@ -28,8 +30,8 @@ std::vector<NormalizedOrderUpdate> BinanceDepthParser::parse(const std::string& 
             double price = std::stod(bid[0].get<std::string>());
             double qty   = std::stod(bid[1].get<std::string>());
             updates.push_back({
-                "Binance_" + symbol,
-                symbol,
+                "Binance_" + normalised_symbol,
+                normalised_symbol,
                 Side::Bid, 
                 price, 
                 qty, 
@@ -44,8 +46,8 @@ std::vector<NormalizedOrderUpdate> BinanceDepthParser::parse(const std::string& 
             double price = std::stod(ask[0].get<std::string>());
             double qty   = std::stod(ask[1].get<std::string>());
             updates.push_back({
-                "Binance_" + symbol,
-                symbol,
+                "Binance_" + normalised_symbol,
+                normalised_symbol,
                 Side::Ask, 
                 price, 
                 qty, 
