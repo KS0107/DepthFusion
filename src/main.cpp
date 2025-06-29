@@ -2,6 +2,7 @@
 #include "se_orderbook/core/OrderBookManager.hpp"
 #include "se_orderbook/feedhandlers/BinanceFeedHandler.hpp"
 #include "se_orderbook/feedhandlers/KrakenFeedHandler.hpp"
+#include "OrderEntry.hpp"
 #include <iostream>
 #include <memory>
 #include <csignal>
@@ -27,7 +28,7 @@ int main() {
 
     // Attach Kraken Feed Handler
     manager.add_feed_handler(std::make_unique<KrakenFeedHandler>(
-        std::vector<std::string>{"BTC/USDT"},  
+        std::vector<std::string>{"BTC/USDT"},
         manager.get_aggregated_order_book()
     ));
 
@@ -35,8 +36,27 @@ int main() {
 
     while (!stop_signal) {
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        std::cout << "\n================ Aggregated Order Book Snapshot ================\n";
+
+        std::cout << "\n================ Exchange Order Books ================\n";
         manager.print_all();
+
+        std::cout << "\n================ Aggregated Top 10 (btcusdt) ================\n";
+
+        AggregatedOrderBook& agg = manager.get_aggregated_order_book();
+        const std::string symbol = "btcusdt";
+
+        auto top_bids = agg.get_aggregated_top_n(symbol, Side::Bid, 10);
+        auto top_asks = agg.get_aggregated_top_n(symbol, Side::Ask, 10);
+
+        std::cout << "--- Bids ---\n";
+        for (const auto& entry : top_bids) {
+            std::cout << entry.price << " @ " << entry.quantity << "\n";
+        }
+
+        std::cout << "--- Asks ---\n";
+        for (const auto& entry : top_asks) {
+            std::cout << entry.price << " @ " << entry.quantity << "\n";
+        }
     }
 
     std::cout << "\n[Main] Shutting down...\n";

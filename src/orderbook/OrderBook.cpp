@@ -8,6 +8,7 @@ symbol_(std::move(symbol)),
 bids_(Side::Bid),
 asks_(Side::Ask) {}
 
+
 void OrderBook::apply_update(const NormalizedOrderUpdate& update) {
     if (update.side == Side::Bid) {
         bids_.update(update.price, update.quantity);
@@ -19,6 +20,7 @@ void OrderBook::apply_update(const NormalizedOrderUpdate& update) {
 std::vector<OrderEntry> OrderBook::get_top_n(Side side, int n) const {
     return (side == Side::Bid) ? bids_.get_top_n(n) : asks_.get_top_n(n);
 };
+
 
 std::string OrderBook::get_exchange_name() const {
     return exchange_name_;
@@ -42,3 +44,7 @@ std::ostream& operator<<(std::ostream& os, const OrderBook& ob) {
 
     return os;
 };
+
+std::string OrderBook::get_symbol() const {
+    return symbol_;
+}

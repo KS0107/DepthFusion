@@ -10,6 +10,8 @@ include_directories(include/se_orderbook)
 include_directories(include/se_orderbook/websocket)
 include_directories(include/se_orderbook/feedhandlers)
 include_directories(include/se_orderbook/core)
+include_directories(${PROJECT_SOURCE_DIR}/src/utils)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 # Homebrew includes for WebSocket++ and OpenSSL
 include_directories(/opt/homebrew/include)
 link_directories(/opt/homebrew/lib)

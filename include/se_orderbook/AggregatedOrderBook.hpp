@@ -18,8 +18,11 @@ public:
 
     std::vector<OrderEntry> get_top_n(Side side, int n) const;
     std::unordered_map<std::string, std::vector<OrderEntry>> get_all_top_n(Side side, int n) const;
+    std::vector<OrderEntry> get_aggregated_top_n(const std::string& symbol, Side side, int n) const;
+    void print_aggregated_book(const std::string& symbol, int n) const;
 private:
     std::unordered_map<std::string, std::unique_ptr<IOrderBook>> books_;
+    std::unordered_map<std::string, std::vector<IOrderBook*>> symbol_to_books_;
 };
 
 #endif
