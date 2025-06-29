@@ -20,7 +20,7 @@ TEST(BinanceDepthParserTest, ParsesValidDepthMessage) {
     EXPECT_EQ(updates[0].side, Side::Bid);
     EXPECT_EQ(updates[0].price, 50000.0);
     EXPECT_EQ(updates[0].quantity, 1.0);
-    EXPECT_EQ(updates[0].symbol, "BTCUSDT");
+    EXPECT_EQ(updates[0].symbol, "btcusdt");
 
     EXPECT_EQ(updates[1].side, Side::Ask);
     EXPECT_EQ(updates[1].price, 50010.0);

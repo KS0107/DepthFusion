@@ -12,10 +12,10 @@ TEST(OrderBookManagerTest, RegistersCorrectBooksForPairs) {
 
     // Check that books were registered
     auto all_bids = agg.get_all_top_n(Side::Bid, 1);
-    EXPECT_TRUE(all_bids.find("Binance_ETHUSDT") != all_bids.end());
-    EXPECT_TRUE(all_bids.find("Binance_BTCUSDT") != all_bids.end());
+    EXPECT_TRUE(all_bids.find("Binance_ethusdt") != all_bids.end());
+    EXPECT_TRUE(all_bids.find("Binance_btcusdt") != all_bids.end());
 
     auto all_asks = agg.get_all_top_n(Side::Ask, 1);
-    EXPECT_TRUE(all_asks.find("Binance_ETHUSDT") != all_asks.end());
-    EXPECT_TRUE(all_asks.find("Binance_BTCUSDT") != all_asks.end());
+    EXPECT_TRUE(all_asks.find("Binance_ethusdt") != all_asks.end());
+    EXPECT_TRUE(all_asks.find("Binance_btcusdt") != all_asks.end());
 }
